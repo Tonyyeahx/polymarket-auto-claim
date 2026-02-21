@@ -110,6 +110,9 @@ def redeem_position_sync(
 
     try:
         condition_id: str = position.get("conditionId", "")
+        if not condition_id:
+            log.warning("skipping_position missing_condition_id")
+            return False
         neg_risk: bool = bool(position.get("negRisk", False))
         outcome: str = position.get("outcome", "")
         index_sets = _outcome_to_index_sets(outcome)

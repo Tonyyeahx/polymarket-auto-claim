@@ -18,12 +18,9 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-_shutdown = asyncio.Event()
-
-
-def _handle_signal(sig: signal.Signals) -> None:
+def _handle_signal(sig: signal.Signals, shutdown: asyncio.Event) -> None:
     log.info("shutdown_requested signal=%s", sig.name)
-    _shutdown.set()
+    shutdown.set()
 
 
 async def run_once() -> None:
@@ -41,12 +38,13 @@ async def run_once() -> None:
 
 
 async def main() -> None:
+    shutdown = asyncio.Event()
     settings = get_settings()
     interval = settings.poll_interval
 
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
-        loop.add_signal_handler(sig, lambda s=sig: _handle_signal(s))
+        loop.add_signal_handler(sig, lambda s=sig: _handle_signal(s, shutdown))
 
     log.info(
         "starting wallet=%s interval=%ds",
@@ -54,10 +52,10 @@ async def main() -> None:
         interval,
     )
 
-    while not _shutdown.is_set():
+    while not shutdown.is_set():
         await run_once()
         try:
-            await asyncio.wait_for(_shutdown.wait(), timeout=interval)
+            await asyncio.wait_for(shutdown.wait(), timeout=interval)
         except asyncio.TimeoutError:
             pass  # normal — timeout means next cycle
 
