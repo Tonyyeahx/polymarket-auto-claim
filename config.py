@@ -1,5 +1,7 @@
 """Configuration — loaded from environment variables / .env file."""
 
+import threading
+
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -29,16 +31,20 @@ class Settings(BaseSettings):
 
 
 _settings: Settings | None = None
+_lock = threading.Lock()
 
 
 def get_settings() -> Settings:
     global _settings
     if _settings is None:
-        _settings = Settings()
+        with _lock:
+            if _settings is None:
+                _settings = Settings()
     return _settings
 
 
 def reset_settings() -> None:
     """Reset cached settings (used in tests)."""
     global _settings
-    _settings = None
+    with _lock:
+        _settings = None
