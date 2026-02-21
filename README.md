@@ -1,44 +1,60 @@
 # poly-auto-claim
 
-Auto-redeems won Polymarket positions every 5 minutes (configurable).
+Automatically claims won Polymarket positions every 5 minutes.
+
+## Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+- Your Polymarket wallet private key and address
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and fill in your credentials:
-   ```
-   PRIVATE_KEY=0x...      # your 64-char hex private key
-   WALLET_ADDRESS=0x...   # your EIP-55 checksummed wallet address
-   ```
+**1. Clone the repo**
+```bash
+git clone https://github.com/Tonyyeahx/polymarket-auto-claim.git
+cd polymarket-auto-claim
+```
 
-2. Build and run:
-   ```bash
-   docker build -t poly-auto-claim .
-   docker run --env-file .env poly-auto-claim
-   ```
+**2. Create your `.env` file**
+```bash
+cp .env.example .env
+```
+
+Open `.env` and fill in your credentials:
+```
+PRIVATE_KEY=0x...      # your wallet private key (64 hex chars after 0x)
+WALLET_ADDRESS=0x...   # your wallet address (42 chars)
+```
+
+**3. Start the bot**
+```bash
+docker compose up -d
+```
+
+The bot is now running in the background. It will keep running even if you close the terminal or restart your machine.
+
+## Useful commands
+
+```bash
+# Watch live logs
+docker compose logs -f
+
+# Stop the bot
+docker compose down
+
+# Restart the bot
+docker compose restart
+```
 
 ## Configuration
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `PRIVATE_KEY` | yes | — | 0x-prefixed hex private key (66 chars) |
-| `WALLET_ADDRESS` | yes | — | EIP-55 checksummed wallet address |
-| `POLYGON_RPC_URL` | no | `https://polygon-rpc.com` | Polygon RPC endpoint (use a dedicated provider for production) |
-| `POLL_INTERVAL` | no | `300` | Seconds between redemption polls |
+| `PRIVATE_KEY` | yes | — | 0x-prefixed hex private key |
+| `WALLET_ADDRESS` | yes | — | Wallet address |
+| `POLYGON_RPC_URL` | no | `https://polygon-rpc.com` | Polygon RPC endpoint |
+| `POLL_INTERVAL` | no | `300` | Seconds between checks |
 
 ## How it works
 
-1. Every `POLL_INTERVAL` seconds, fetches your positions from the Polymarket data API
-2. Filters for positions where `redeemable=true` and `size > 0`
-3. For each redeemable position, submits a `redeemPositions` transaction on Polygon
-4. Handles both standard CTF markets and NegRisk markets automatically
-
-## Running tests
-
-```bash
-pip install -r requirements-dev.txt
-pytest tests/ -v
-```
-
-## Stopping
-
-Send `SIGINT` (Ctrl+C) or `SIGTERM` — the bot finishes the current cycle and exits cleanly.
+Every `POLL_INTERVAL` seconds the bot checks your Polymarket positions for any that are won and unclaimed, then submits an on-chain `redeemPositions` transaction on Polygon to collect them. Handles both standard and NegRisk markets automatically.
