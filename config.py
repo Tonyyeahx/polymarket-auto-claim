@@ -24,7 +24,7 @@ class Settings(BaseSettings):
         description="Polygon mainnet RPC endpoint",
     )
     poll_interval: int = Field(
-        default=300,
+        default=120,
         description="Seconds between redemption polls",
         ge=10,
     )

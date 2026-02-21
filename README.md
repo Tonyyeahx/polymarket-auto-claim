@@ -53,7 +53,7 @@ docker compose restart
 | `PRIVATE_KEY` | yes | — | 0x-prefixed hex private key |
 | `WALLET_ADDRESS` | yes | — | Wallet address |
 | `POLYGON_RPC_URL` | no | `https://polygon-rpc.com` | Polygon RPC endpoint |
-| `POLL_INTERVAL` | no | `300` | Seconds between checks |
+| `POLL_INTERVAL` | no | `120` | Seconds between checks |
 
 ## How it works
 
