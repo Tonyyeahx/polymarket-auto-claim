@@ -67,3 +67,22 @@ def _condition_id_to_bytes32(condition_id: str) -> bytes:
     """Convert a hex condition ID (with or without 0x prefix) to 32 bytes."""
     hex_str = condition_id.removeprefix("0x")
     return bytes.fromhex(hex_str.zfill(64))
+
+# ---------------------------------------------------------------------------
+# API
+# ---------------------------------------------------------------------------
+
+
+async def get_redeemable_positions(wallet_address: str) -> list[dict[str, Any]]:
+    """Fetch positions from Polymarket data API and return redeemable ones."""
+    url = f"{POSITIONS_API_URL}?user={wallet_address}"
+    async with httpx.AsyncClient(timeout=30) as client:
+        response = await client.get(url)
+        response.raise_for_status()
+        positions: list[dict[str, Any]] = response.json()
+
+    return [
+        p
+        for p in positions
+        if p.get("redeemable") is True and float(p.get("size", 0)) > 0
+    ]
