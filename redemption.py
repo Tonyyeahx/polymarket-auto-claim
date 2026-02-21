@@ -101,7 +101,7 @@ def redeem_position_sync(
 ) -> bool:
     """Submit a redeemPositions transaction. Returns True on success."""
     w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={"timeout": 30}))
-    if not w3.is_connected():
+    if not w3.is_connected(show_traceback=True):
         log.error("rpc_not_connected rpc=%s", rpc_url)
         return False
 
