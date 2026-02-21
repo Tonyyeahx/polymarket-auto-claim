@@ -1,0 +1,10 @@
+.env
+.git
+__pycache__
+*.pyc
+*.pyo
+tests/
+docs/
+.env.example
+requirements-dev.txt
+.venv
